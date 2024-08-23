@@ -13,10 +13,9 @@ let getProducts = async function (limit, skip) {
       `https://dummyjson.com/products?limit=${limit}&skip=${skip}&select=title,price,category,description,thumbnail,brand,rating,id`
     );
     productArray = await productArray.json();
-    console.log("getProducts", productArray);
     return productArray;
   } catch (e) {
-    console.log("getProducts()", e);
+    console.error("getProducts()", e);
   }
 };
 
@@ -26,6 +25,7 @@ async function createCards(productSource) {
 
   productList.products.forEach((product) => {
     let createMainCardDiv = document.createElement("div");
+    let createCardBody = document.createElement("div");
     let createImgDiv = document.createElement("div");
     let createImg = document.createElement("img");
     let createInfoDiv = document.createElement("div");
@@ -33,23 +33,35 @@ async function createCards(productSource) {
     let itemtitle = document.createElement("h6");
     let itemPrice = document.createElement("h5");
 
-    createMainCardDiv.className = "cardDiv";
+    createMainCardDiv.className = "card w-auto m-1";
+    createCardBody.className = "card-body";
+    createImg.className = "img-fluid";
 
     mainCardsArea.appendChild(createMainCardDiv);
-    createMainCardDiv.appendChild(createImgDiv);
+    createMainCardDiv.appendChild(createCardBody);
+    createCardBody.appendChild(createImgDiv);
     createImgDiv.appendChild(createImg);
-    createMainCardDiv.appendChild(createInfoDiv);
+    createCardBody.appendChild(createInfoDiv);
 
     createInfoDiv.appendChild(itemBrand);
     createInfoDiv.appendChild(itemtitle);
     createInfoDiv.appendChild(itemPrice);
 
-    createImg.src = product.thumbnail;
-    itemBrand.innerText = product.brand;
-    itemtitle.innerText = product.title;
-    itemPrice.innerText = `Price: ${product.price} Eur`;
+    product.brand === undefined ? headlineOption1() : headlineOption2();
 
-    createMainCardDiv.addEventListener("click", (event) => {
+    function headlineOption1() {
+      itemBrand.innerText = product.title;
+      itemtitle.innerText = "";
+    }
+
+    function headlineOption2() {
+      itemBrand.innerText = product.brand;
+      itemtitle.innerText = product.title;
+    }
+
+    createImg.src = product.thumbnail;
+    itemPrice.innerText = `Price: ${product.price} Eur`;
+    createMainCardDiv.addEventListener("click", () => {
       window.location.href = `index(product).html?id=${product.id}`;
     });
   });
@@ -88,10 +100,9 @@ async function searchFunction(searchInput) {
       `https://dummyjson.com/products/search?q=${searchInput}`
     );
     searchedProducts = await searchedProducts.json();
-    console.log(searchedProducts);
     return searchedProducts;
   } catch (e) {
-    console.log("searchFunction()", e);
+    console.error("searchFunction()", e);
   }
 }
 
@@ -103,7 +114,7 @@ async function getCategories() {
     categoriesNames = await categoriesNames.json();
     return categoriesNames;
   } catch (e) {
-    console.log("getCategories()", e);
+    console.error("getCategories()", e);
   }
 }
 
@@ -112,10 +123,9 @@ async function createCategoryOptions(source) {
   catList.sort();
 
   catList.forEach((item) => {
-    let result = item.charAt(0).toUpperCase() + item.substr(1);
-    let opt = document.createElement("option");
-    opt.innerText = result;
-    dropListMainElem.appendChild(opt);
+    let categoryOption = document.createElement("option");
+    categoryOption.innerText = item.name;
+    dropListMainElem.appendChild(categoryOption);
   });
 }
 createCategoryOptions(getCategories());
@@ -126,15 +136,13 @@ async function getCategoryProducts(category) {
       `https://dummyjson.com/products/category/${category}`
     );
     categoryProducts = await categoryProducts.json();
-    console.log(categoryProducts);
-
     document.querySelector("main").innerHTML = "";
     document.querySelector("footer").innerHTML = "";
     createCards(categoryProducts);
 
     return categoryProducts;
   } catch (e) {
-    console.log("categoryProducts", e);
+    console.error("categoryProducts", e);
   }
 }
 
@@ -154,8 +162,12 @@ document.getElementById("reset").addEventListener("click", (event) => {
   location.reload();
 });
 
-dropListMainElem.addEventListener("change", async (event) => {
+dropListMainElem.addEventListener("change", async () => {
   let selectedCategory = dropListMainElem.value.toLowerCase();
+
+  if (selectedCategory.includes(" "))
+    selectedCategory = selectedCategory.replace(" ", "-");
+
   selectedCategory === "all categories"
     ? location.reload()
     : getCategoryProducts(selectedCategory);
