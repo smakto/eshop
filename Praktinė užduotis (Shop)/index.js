@@ -1,17 +1,26 @@
-let pageSelectButtons = document.querySelectorAll("footer button");
+let nextAndPreviousButtons = document.querySelectorAll("footer > button");
+let numberedButtons = document.querySelectorAll("footer div button");
 let currentPage = 1;
 let searchForm = document.forms[0];
 let dropListMainElem = document.querySelector("select");
+let totalProductCount;
 
-///////
-// Functions
-///////
+async function countProducts() {
+  try {
+    let allProducts = await fetch("https://dummyjson.com/products");
+    allProducts = await allProducts.json();
+    totalProductCount = allProducts.total;
+  } catch (e) {
+    console.error("Error", e);
+  }
+}
 
 let getProducts = async function (limit, skip) {
   try {
     let productArray = await fetch(
       `https://dummyjson.com/products?limit=${limit}&skip=${skip}&select=title,price,category,description,thumbnail,brand,rating,id`
     );
+
     productArray = await productArray.json();
     return productArray;
   } catch (e) {
@@ -22,7 +31,7 @@ let getProducts = async function (limit, skip) {
 async function createCards(productSource) {
   let mainCardsArea = document.querySelector("main");
   let productList = await productSource;
-
+  console.log(productList);
   productList.products.forEach((product) => {
     let createMainCardDiv = document.createElement("div");
     let createCardBody = document.createElement("div");
@@ -65,34 +74,10 @@ async function createCards(productSource) {
       window.location.href = `index(product).html?id=${product.id}`;
     });
   });
+  pageButtonsFunction();
 }
-createCards(getProducts(12, 0));
 
-pageSelectButtons.forEach((button) => {
-  button.addEventListener("click", (event) => {
-    let pageNum = Number(button.innerText);
-    let setLimit = 12;
-    let setSkip = (pageNum - 1) * 12;
-    if (button.innerText !== "Previous" && button.innerText !== "Next") {
-      currentPage = pageNum;
-      if (pageNum === 1) {
-        setSkip = 0;
-      } else setSkip;
-    } else if (button.innerText === "Previous") {
-      if (currentPage === 1) {
-        currentPage = 1;
-      } else currentPage -= 1;
-      setSkip = currentPage * 12 - 12;
-    } else if (button.innerText === "Next") {
-      if (currentPage === 9) {
-        currentPage = 9;
-      } else currentPage += 1;
-      setSkip = currentPage * 12 - 12;
-    }
-    document.querySelector("main").innerHTML = "";
-    createCards(getProducts(setLimit, setSkip));
-  });
-});
+createCards(getProducts(12, 0));
 
 async function searchFunction(searchInput) {
   try {
@@ -128,6 +113,7 @@ async function createCategoryOptions(source) {
     dropListMainElem.appendChild(categoryOption);
   });
 }
+
 createCategoryOptions(getCategories());
 
 async function getCategoryProducts(category) {
@@ -145,10 +131,6 @@ async function getCategoryProducts(category) {
     console.error("categoryProducts", e);
   }
 }
-
-///////
-// Event listeners
-///////
 
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -172,3 +154,25 @@ dropListMainElem.addEventListener("change", async () => {
     ? location.reload()
     : getCategoryProducts(selectedCategory);
 });
+
+async function generateButtons() {
+  await countProducts();
+  const buttonCount = Math.ceil(totalProductCount / 12);
+  for (let i = 0; i < buttonCount; i++) {
+    let buttonDiv = document.querySelector(".numberedButtons");
+    let newButton = document.createElement("button");
+    newButton.type = "button";
+    newButton.className = "m-1 btn btn-primary";
+    buttonDiv.append(newButton);
+    newButton.innerText = i + 1;
+  }
+}
+
+async function pageButtonsFunction() {
+  await generateButtons();
+  let allPageButtons = document.querySelectorAll("footer *:not(div)");
+
+  allPageButtons.forEach((button) => {
+    button.addEventListener("click", () => {});
+  });
+}
