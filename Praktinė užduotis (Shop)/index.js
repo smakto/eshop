@@ -30,8 +30,8 @@ let getProducts = async function (limit, skip) {
 
 async function createCards(productSource) {
   let mainCardsArea = document.querySelector("main");
+  mainCardsArea.innerHTML = "";
   let productList = await productSource;
-  console.log(productList);
   productList.products.forEach((product) => {
     let createMainCardDiv = document.createElement("div");
     let createCardBody = document.createElement("div");
@@ -157,9 +157,30 @@ dropListMainElem.addEventListener("change", async () => {
 
 async function generateButtons() {
   await countProducts();
+  document.querySelector("footer").innerHTML = "";
+  let buttonDiv = document.createElement("div");
+  buttonDiv.className = "numberedButtons";
+
+  let previousButton = document.createElement("button");
+  let nextButton = document.createElement("button");
+  previousButton.innerText = "Previous";
+  nextButton.innerText = "Next";
+
+  const stepButtons = [previousButton, nextButton];
+  stepButtons.forEach((button) => {
+    document.querySelector("footer").append(button);
+    button.className = "m-1 btn btn-primary";
+  });
+
+  document
+    .querySelector("footer")
+    .insertBefore(
+      buttonDiv,
+      document.querySelector("footer button:last-child")
+    );
+
   const buttonCount = Math.ceil(totalProductCount / 12);
   for (let i = 0; i < buttonCount; i++) {
-    let buttonDiv = document.querySelector(".numberedButtons");
     let newButton = document.createElement("button");
     newButton.type = "button";
     newButton.className = "m-1 btn btn-primary";
@@ -172,7 +193,45 @@ async function pageButtonsFunction() {
   await generateButtons();
   let allPageButtons = document.querySelectorAll("footer *:not(div)");
 
+  let pageNumber;
+  let toSkip;
+
   allPageButtons.forEach((button) => {
-    button.addEventListener("click", () => {});
+    button.addEventListener("click", () => {
+      button.innerText !== "Previous" && button.innerText !== "Next"
+        ? (pageNumber = parseInt(button.innerText))
+        : button.innerText === "Next"
+        ? (pageNumber = "Next")
+        : (pageNumber = "Previous");
+
+      if (typeof pageNumber === "number") {
+        currentPage = pageNumber;
+        toSkip = pageNumber * 12 - 12;
+      }
+
+      if (pageNumber === "Previous") {
+        pageNumber = currentPage;
+        if (currentPage === 1) {
+          toSkip = 0;
+        } else {
+          currentPage -= 1;
+          pageNumber -= 1;
+          toSkip = pageNumber * 12 - 12;
+        }
+      }
+
+      if (pageNumber === "Next") {
+        pageNumber = currentPage;
+        if (currentPage === Math.ceil(totalProductCount / 12)) {
+          toSkip = pageNumber * 12 - 12;
+        } else {
+          currentPage += 1;
+          pageNumber += 1;
+          toSkip = pageNumber * 12 - 12;
+        }
+      }
+
+      createCards(getProducts(12, toSkip));
+    });
   });
 }
