@@ -23,14 +23,14 @@ function renderProductPage(product) {
 
   document.querySelector("img").src = product.images[0];
   document.querySelector(
-    "h2"
+    "h1"
   ).innerText = `${product.title} (${product.brand})`;
   document.getElementById("productDescription").innerText = product.description;
   document.querySelector(
     "h5"
   ).innerText = `Previous price ${product.price} Eur`;
   document.querySelector(
-    "h6"
+    ".appliedDiscount"
   ).innerText = `Discount ${product.discountPercentage}%`;
   document.querySelector("h4").innerText = `Current price ${finalPrice} Eur`;
 }

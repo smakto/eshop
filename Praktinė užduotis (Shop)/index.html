@@ -20,23 +20,28 @@
 
     <title>March 7th</title>
   </head>
-  <body class="d-flex flex-column-reverse">
+  <body class="bg-light">
     <header
-      class="bg-primary d-flex justify-content-around align-items-center border-bottom"
+      class="fixed-top bg-primary d-flex justify-content-around align-items-center border-bottom"
     >
       <nav class="w-50 p-3 d-flex justify-content-around">
         <h3>Home</h3>
         <h3>About</h3>
 
-        <select>
+        <select class="form-select bg-light w-25">
           <option>All categories</option>
         </select>
       </nav>
 
-      <form>
-        <input type="text" name="searchbar" placeholder="Search" />
-        <input type="submit" value="Search" />
-        <button id="reset">Reset</button>
+      <form class="d-flex">
+        <input
+          class="w-50 m-2 form-control bg-light"
+          type="text"
+          name="searchbar"
+          placeholder="Search"
+        />
+        <input class="m-2 btn btn-outline-info" type="submit" value="Search" />
+        <button class="m-2 btn btn-outline-info" id="reset">Reset</button>
       </form>
     </header>
     <main class="w-75 mx-auto p-5 d-flex flex-wrap"></main>

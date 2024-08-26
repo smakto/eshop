@@ -150,7 +150,7 @@ dropListMainElem.addEventListener("change", async () => {
   if (selectedCategory.includes(" "))
     selectedCategory = selectedCategory.replace(" ", "-");
 
-  selectedCategory === "all categories"
+  selectedCategory === "all-categories"
     ? location.reload()
     : getCategoryProducts(selectedCategory);
 });
@@ -161,12 +161,16 @@ async function generateButtons() {
   let buttonDiv = document.createElement("div");
   buttonDiv.className = "numberedButtons";
 
+  let firstButton = document.createElement("button");
   let previousButton = document.createElement("button");
   let nextButton = document.createElement("button");
+  let lastButton = document.createElement("button");
+  firstButton.innerText = "First";
   previousButton.innerText = "Previous";
   nextButton.innerText = "Next";
+  lastButton.innerText = "Last";
 
-  const stepButtons = [previousButton, nextButton];
+  const stepButtons = [firstButton, previousButton, nextButton, lastButton];
   stepButtons.forEach((button) => {
     document.querySelector("footer").append(button);
     button.className = "m-1 btn btn-primary";
@@ -176,7 +180,7 @@ async function generateButtons() {
     .querySelector("footer")
     .insertBefore(
       buttonDiv,
-      document.querySelector("footer button:last-child")
+      document.querySelector("footer button:nth-last-child(2)")
     );
 
   const buttonCount = Math.ceil(totalProductCount / 12);
@@ -198,11 +202,18 @@ async function pageButtonsFunction() {
 
   allPageButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      button.innerText !== "Previous" && button.innerText !== "Next"
+      button.innerText !== "Previous" &&
+      button.innerText !== "Next" &&
+      button.innerText !== "First" &&
+      button.innerText !== "Last"
         ? (pageNumber = parseInt(button.innerText))
         : button.innerText === "Next"
         ? (pageNumber = "Next")
-        : (pageNumber = "Previous");
+        : button.innerText === "Previous"
+        ? (pageNumber = "Previous")
+        : button.innerText === "First"
+        ? (pageNumber = "First")
+        : (pageNumber = "Last");
 
       if (typeof pageNumber === "number") {
         currentPage = pageNumber;
@@ -218,9 +229,7 @@ async function pageButtonsFunction() {
           pageNumber -= 1;
           toSkip = pageNumber * 12 - 12;
         }
-      }
-
-      if (pageNumber === "Next") {
+      } else if (pageNumber === "Next") {
         pageNumber = currentPage;
         if (currentPage === Math.ceil(totalProductCount / 12)) {
           toSkip = pageNumber * 12 - 12;
@@ -229,9 +238,29 @@ async function pageButtonsFunction() {
           pageNumber += 1;
           toSkip = pageNumber * 12 - 12;
         }
+      } else if (pageNumber === "First") {
+        pageNumber = 1;
+        currentPage = 1;
+        toSkip = 0;
+      } else if (pageNumber === "Last") {
+        const pageCount = Math.ceil(totalProductCount / 12);
+        currentPage = pageCount;
+        pageNumber = pageCount;
+        toSkip = pageNumber * 12 - 12;
       }
 
       createCards(getProducts(12, toSkip));
     });
+
+    if (Number(button.innerText) === currentPage) {
+      button.className = "btn btn-outline-primary";
+    }
+
+    if (
+      Number(button.innerText) > currentPage + 3 ||
+      Number(button.innerText) < currentPage - 3
+    ) {
+      button.style.display = "none";
+    }
   });
 }
